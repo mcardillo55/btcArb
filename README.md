@@ -1,4 +1,4 @@
 btcArb
 ======
 
-An attempt at identifying an capitalizing on potential Bitcoin arbitrage situations
+An attempt at identifying and capitalizing on potential Bitcoin arbitrage situations
