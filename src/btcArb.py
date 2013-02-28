@@ -112,40 +112,43 @@ def compare_prices(mtdata, bsdata):
     print "#%d, mtASK: %f %s bsBID: %f, gain: %f, max: %f, avg: %f" % \
           (numgains, mtdata[2], direction, bsdata[1], gain, maxgain, avggain)
 
+def main():
+    parser = argparse.ArgumentParser(description='Identify and capitalize on potential Bitcoin arbitrage situations')
+    parser.add_argument('-v', action='store_true', help='Print more info to the terminal')
+    parser.add_argument('-i', type=int, help='Specify ticker refresh interval in seconds [default = 5]')
+    parser.add_argument('--http', action='store_true', help='Force only HTTP API calls')
+    args = parser.parse_args()
+    verbose = args.v
+    force_http = args.http
 
-parser = argparse.ArgumentParser(description='Identify and capitalize on potential Bitcoin arbitrage situations')
-parser.add_argument('-v', action='store_true', help='Print more info to the terminal')
-parser.add_argument('-i', type=int, help='Specify ticker refresh interval in seconds [default = 5]')
-parser.add_argument('--http', action='store_true', help='Force only HTTP API calls')
-args = parser.parse_args()
-verbose = args.v
-force_http = args.http
-
-if force_http:
-    mtgox = None
-else:
-    mtgox = connect_mtgox()
-    
-if (args.i is not None):
-    refresh_int = args.i
-else:
-    refresh_int = DEFAULT_REFRESH
-    
-#Main program loop
-while True:
-    if mtgox is not None:
-        mtdata = get_mtgoxtick(mtgox)
+    if force_http:
+        mtgox = None
     else:
-        mtdata = get_mtgoxtick_http()
-    bsdata = get_bitstamptick()
+        mtgox = connect_mtgox()
+        
+    if (args.i is not None):
+        refresh_int = args.i
+    else:
+        refresh_int = DEFAULT_REFRESH
+        
+#Main program loop
+    while True:
+        if mtgox is not None:
+            mtdata = get_mtgoxtick(mtgox)
+        else:
+            mtdata = get_mtgoxtick_http()
+        bsdata = get_bitstamptick()
 
 #mtdata is None on socket timeout
-    if mtdata is not None:
-        compare_prices(mtdata, bsdata)
-        retries = 0
-    else:
-        retries += 1
-        if retries == MAX_RETRIES:
-            print "Maximum socket retries reached. Falling back to HTTP mode."
-            mtgox = None
-    time.sleep(refresh_int)
+        if mtdata is not None:
+            compare_prices(mtdata, bsdata)
+            retries = 0
+        else:
+            retries += 1
+            if retries == MAX_RETRIES:
+                print "Maximum socket retries reached. Falling back to HTTP mode."
+                mtgox = None
+        time.sleep(refresh_int)
+        
+if __name__ == "__main__":
+    main()
